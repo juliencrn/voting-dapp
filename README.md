@@ -22,7 +22,6 @@ Requires
 - git
 - truffle (dapp EVM framework)
 - Ganache (local blockchain)
-- 
 
 Download the repo:
 ```sh
