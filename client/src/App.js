@@ -1,20 +1,19 @@
 import React, { useState, useEffect } from "react"
+import CandidatesTable from "./CandidatesTable";
 
 import ElectionContract from "./contracts/Election.json"
 import getWeb3 from './getWeb3';
+import VoteForm from "./VoteForm";
 
 function App() {
   const [state, setState] = useState({
     web3: null,
     accounts: null,
-    contract: null
+    contract: null,
+    canVote: false,
+    candidates: []
   })
 
-  const [selected, setSelected] = useState(1)
-  const [canVote, setCanVote] = useState(false)
-  const [candidates, setCandidates] = useState([])
-
-  // Init web3 on mount
   useEffect(() => {
     (async () => {
       try {
@@ -27,54 +26,32 @@ function App() {
         // Get the contract instance.
         const networkId = await web3.eth.net.getId()
         const deployedNetwork = ElectionContract.networks[networkId]
-        const instance = new web3.eth.Contract(
+        const contract = new web3.eth.Contract(
           ElectionContract.abi,
           deployedNetwork && deployedNetwork.address
         )
 
-        // Set web3, accounts, and contract to the state, and then proceed with an
-        // example of interacting with the contract's methods.
-        setState(prevState => ({
-          ...prevState,
-          web3,
-          accounts,
-          contract: instance,
-        }))
+        // Fetch candidates
+        let candidates = []
+        const candidateCount = await contract.methods.candidateCount().call()
+        for (let i = 1; i <= Number(candidateCount); i++) {
+          const candidate = await contract.methods.candidates(i).call()
+          candidates.push(candidate)
+        }
+
+        // Check if the current user has voted
+        const hasVoted = await contract.methods.voters(accounts[0]).call()
+
+        // Save all that in the component state
+        setState(s => ({ ...s, web3, accounts, contract, candidates, canVote: !hasVoted }))
 
       } catch (error) {
         // Catch any errors for any of the above operations.
-        alert(
-          `Failed to load web3, accounts, or contract. Check console for details.`,
-        );
+        alert(`Failed to load web3, accounts, or contract. Check console for details.`);
         console.error(error);
       }
     })()
   }, [])
-
-  useEffect(() => {
-    if (state.web3 && state.contract) {
-      (async () => {
-        // Fetch candidates
-        let candidates = []
-        const candidateCount = await state.contract.methods.candidateCount().call()
-        for (let i = 1; i <= Number(candidateCount); i++) {
-          const candidate = await state.contract.methods.candidates(i).call()
-          candidates.push(candidate)
-        }
-        setCandidates(candidates)
-
-        // Check if the current user can vote
-        const hasVoted = await state.contract.methods.voters(state.accounts[0]).call()
-        setCanVote(!hasVoted)
-      })()
-    }
-  }, [state.web3, state.contract, state.accounts])
-
-  const handleSubmit = e => {
-    e.preventDefault()
-
-    vote(selected)
-  }
 
   const vote = async (candidateId) => {
     if (state.web3 && state.contract && state.accounts) {
@@ -82,10 +59,6 @@ function App() {
         .vote(candidateId)
         .send({ from: state.accounts[0] })
     }
-  }
-
-  const handleSelect = e => {
-    setSelected(Number(e.target.value))
   }
 
   if (!state.web3 || state.accounts.length === 0) {
@@ -96,64 +69,26 @@ function App() {
     )
   }
 
-  const classes = {
-    th: "px-6 py-3 text-left text-xs font-bold text-gray-100 uppercase tracking-wider",
-    td: "px-6 py-4 whitespace-nowrap"
-  }
-
   return (
     <main className="w-full container mx-auto max-w-3xl">
-      <h1 className="mb-4 mt-4 sm:mt-8 text-4xl md:text-5xl text-white font-bold leading-tight">
+      <h1 className="mb-4 mt-4 sm:mt-8 md:mt-16 text-4xl md:text-5xl text-white font-bold leading-tight">
         Voting dapp
       </h1>
 
       <hr className="my-6" />
 
-      {candidates.length > 0 ? (
+      {state.candidates.length > 0 ? (
         <>
-          <div className="overflow-hidden border-gray-300 py-6">
-            <table className="min-w-full divide-y divide-gray-300 border-b">
-              <thead>
-                <tr>
-                  <th scope="col" className={classes.th}>#</th>
-                  <th scope="col" className={classes.th}>Name</th>
-                  <th scope="col" className={classes.th}>Votes</th>
-                </tr>
-              </thead>
+          <CandidatesTable candidates={state.candidates} />
 
-              <tbody className="divide-y divide-gray-300 border-b">
-                {candidates.map(({ id, name, voteCount }) => (
-                  <tr key={id}>
-                    <td className={classes.td}>{id}</td>
-                    <td className={classes.td}>{name}</td>
-                    <td className={classes.td}>{voteCount}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <div>
-            <h3 className="my-4 text-left text-xl md:text-xl text-white font-bold leading-tight">Select Candidate</h3>
-            <form noValidate onSubmit={handleSubmit}>
-              <select disabled onChange={handleSelect} className="px-6 py-3 bg-transparent rounded w-full border focus:outline-none">
-                {candidates.map(({ id, name }) => (
-                  <option key={id} value={id}>{name}</option>
-                ))}
-              </select>
-              {canVote ? (
-                <button type="submit" className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-6 rounded`}>
-                  Vote
-                </button>
-              ) : (
-                <p className="font-bold text-sm py-2 mb-6">You already have voted.</p>
-              )}
-
-            </form>
-          </div>
+          <VoteForm
+            candidates={state.candidates}
+            canVote={state.canVote}
+            onVote={vote}
+          />
         </>
       ) : (
-        <p className="m-auto py-8">Loading Web3, accounts, and contract...</p>
+        <p className="m-auto py-8">There is no candidates yet.</p>
       )}
 
       <hr className="my-6" />
@@ -166,3 +101,4 @@ function App() {
 }
 
 export default App;
+//115
