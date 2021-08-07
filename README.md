@@ -12,6 +12,8 @@ A basic voting dapp (decentralized application) written in Solidity & React.
 
 </div>
 
+![Screenshot](screenshot.png)
+
 After have followed this [tutorial](https://www.youtube.com/watch?v=3681ZYbDSSk) on Youtube from [Dapp University](https://www.youtube.com/channel/UCY0xL8V6NzzFcwzHCgB8orQ), I built this voting app from scratch with React as the frontend.
 
 ## Get started
@@ -39,3 +41,13 @@ truffle console
 # truffle(development)>
 > test
 > migrate --reset
+```
+
+Now, start the front-end application: 
+```sh
+cd client
+npm install
+npm start
+```
+
+Open http://localhost:3000, connect your MetaMask wallet, and vote. 
