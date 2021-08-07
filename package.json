@@ -1,0 +1,26 @@
+{
+  "name": "voting-dapp",
+  "version": "1.0.0",
+  "description": "<div align=\"center\"> <h1>Voting Dapp</h1>",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/juliencrn/voting-dapp.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/juliencrn/voting-dapp/issues"
+  },
+  "homepage": "https://github.com/juliencrn/voting-dapp#readme",
+  "dependencies": {
+    "chai": "^4.3.4",
+    "truffle-assertions": "^0.9.2"
+  }
+}

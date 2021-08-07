@@ -16,6 +16,9 @@ contract Election {
     // Used to access to the candidates mapping
     uint256 public candidateCount;
 
+    // Notify when someone votes
+    event VotedEvent(uint256 indexed candidateId);
+
     constructor() public {
         addCandidate("Candidate 1");
         addCandidate("Candidate 2");
@@ -38,5 +41,8 @@ contract Election {
 
         // Apply the vote in the candidate count
         candidates[_candidateId].voteCount++;
+
+        // Triggger vote event
+        emit VotedEvent(_candidateId);
     }
 }

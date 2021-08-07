@@ -1,4 +1,6 @@
 const Election = artifacts.require("Election.sol");
+const assert = require("chai").assert;
+const truffleAssert = require('truffle-assertions');
 
 contract('Election', accounts => {
   it("should initiate with right candidates", async () => {
@@ -78,4 +80,16 @@ contract('Election', accounts => {
     const candidate2 = await election.candidates(2)
     assert.equal(candidate2.voteCount, 1, "candidate 2 did receive any votes")
   })
+
+  it("should trigger an event when a vote was submitted", async () => {
+    const election = await Election.deployed()
+    const candidateId = 1
+    const voter = accounts[3]
+
+    // Vote
+    const receipt = await election.vote(candidateId, { from: voter })
+
+    // Check if the event is triggered with the good value
+    truffleAssert.eventEmitted(receipt, 'VotedEvent', event => event.candidateId == 1)
+  });
 });
