@@ -42,6 +42,9 @@ function App() {
         // Check if the current user has voted
         const hasVoted = await contract.methods.voters(accounts[0]).call()
 
+        // Vote event listener
+        listenVotes(contract)
+
         // Save all that in the component state
         setState(s => ({ ...s, web3, accounts, contract, candidates, canVote: !hasVoted }))
 
@@ -59,6 +62,25 @@ function App() {
         .vote(candidateId)
         .send({ from: state.accounts[0] })
     }
+  }
+
+  const listenVotes = async contract => {
+    const votedEvent = await contract.events.VotedEvent()
+    votedEvent
+      // Increment candidate vote
+      .on("data", event => {
+        const candidateId = event.returnValues.candidateId
+        setState(s => ({
+          ...s,
+          canVote: false,
+          candidates: s.candidates.map(
+            candidate => candidate.id === candidateId
+              ? ({ ...candidate, voteCount: Number(candidate.voteCount) + 1 })
+              : candidate
+          )
+        }))
+      })
+      .on("error", console.error)
   }
 
   if (!state.web3 || state.accounts.length === 0) {

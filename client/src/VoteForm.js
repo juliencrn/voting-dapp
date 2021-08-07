@@ -13,7 +13,7 @@ export default function VoteForm(props) {
         setSelected(Number(e.target.value))
     }
 
-    if (props.candidates.length === 0) {
+    if (props.candidates.length === 0 || !props.canVote) {
         return null
     }
 
@@ -26,14 +26,9 @@ export default function VoteForm(props) {
                         <option key={id} value={id}>{name}</option>
                     ))}
                 </select>
-                {props.canVote ? (
-                    <button type="submit" className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-6 rounded`}>
-                        Vote
-                    </button>
-                ) : (
-                    <p className="font-bold text-sm py-2 mb-6">You already have voted.</p>
-                )}
-
+                <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-6 rounded">
+                    Vote
+                </button>
             </form>
         </div>
     )
